@@ -1,16 +1,20 @@
 from fastapi import FastAPI
-import pyjokes
+from pydantic import BaseModel
+import wikipedia
 
 app = FastAPI()
-@app.get("/{friend}")
-def joke():
-    return pyjokes.get_joke()
 
-def friends_joke(friend: str):
-    return friend + " tells his joke:" + pyjokes.get_joke()
+@app.get("/{name}")
+def searching_the_name(name: str):
+    return wikipedia.search(name)
 
-def multi_friends_joke(friend: str, jokes_number: int):
-    result = ""
-    for i in range(jokes_number):
-        result += friend + f" tells his joke #{i + 1}: " + pyjokes.get_joke() + ""
-    return result
+@app.get("/limitations/{name}")
+def searching_the_name_with_limitations(name: str, limit: int):
+    return wikipedia.search(name, results=limit)
+
+class Wiki(BaseModel):
+    title: str
+    sentences: int = 2
+@app.post("/create_article")
+def create_article(wiki: Wiki):
+    return wiki.title + ' ' + wikipedia.summary(wiki.title, sentences=wiki.sentences)
